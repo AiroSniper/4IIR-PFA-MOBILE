@@ -86,6 +86,21 @@ public class MainActivity extends AppCompatActivity {
         jsonObject = new JSONObject();
         jsonObject2 = new JSONObject();
       //localisation
+
+        LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        clearthis.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (paintView.polygones.size() >= 1) {
+                    paintView.polygones.remove(paintView.index);
+                    paintView.index--;
+                    if (paintView.index < 0) paintView.index++;
+                    if (paintView.polygones.size() >= 1)
+                        annotation.setText(paintView.polygones.get(paintView.index).getAnnotation());
+                    else annotation.setText("");
+                } else annotation.setText("");
+            }
+        });
         clearall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -258,6 +273,17 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
+    }
+
+    public void getLocation(){
+        gpsTracker = new GpsTracker(MainActivity.this);
+        if(gpsTracker.canGetLocation()){
+            latitude = gpsTracker.getLatitude();
+            longitude = gpsTracker.getLongitude();
+            Log.d("Location",longitude+"");
+        }else{
+            gpsTracker.showSettingsAlert();
+        }
     }
 
     public void addParam() {
