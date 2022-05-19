@@ -162,8 +162,46 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+        annotate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (paintView.polygones.size() >= 1) {
+                    paintView.polygones.get(paintView.index).setAnnotation(annotation.getText().toString());
+                    Toast.makeText(MainActivity.this, "ANNOTATION AFFECTED", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addParam();
+
+                JsonObjectRequest jsObjRequest = new JsonObjectRequest(url, jsonObject, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("RESPONSE", response.toString());
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if (error.getMessage() != null) {
+                            Log.d("ERRORE", error.getMessage());
+                        }
+                    }
+                });
+
+                requestQueue.add(jsObjRequest);
+                paintView.polygones.clear();
+                annotation.setText("");
+                paintView.index = -1;
+                image.setBackgroundColor(Color.WHITE);
+                uploadImage();
 
 
+            }
+
+        });
 
     }
 
@@ -221,4 +259,36 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    public void addParam() {
+        //add a list of polygone
+        JSONArray objects = new JSONArray();
+        JSONObject object = new JSONObject();
+        JSONObject gps_location=new JSONObject();
+        Gson gson = new Gson();
+        try {
+            //add
+            gps_location.put("latitude",latitude);
+            gps_location.put("longitude",longitude);
+            Log.d(" gps_location", gps_location+"");
+            for (Polygone p : paintView.polygones) {
+                object.put("class", p.getAnnotation());
+                String listString = gson.toJson(p.getPoints(), new TypeToken<ArrayList<Point>>() {
+                }.getType());
+                object.put("polygon", new JSONArray(listString));
+                objects.put(object);
+            }
+            jsonObject.put("file_url", "./public/uploads/"+imageFile.getName());
+            jsonObject.put("width", rotatedBitmap.getWidth());
+            jsonObject.put("height", rotatedBitmap.getHeight());
+            jsonObject.put("date_captured", new java.util.Date());
+            jsonObject.put("gps_location",gps_location);
+            jsonObject.put("objects", objects);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
