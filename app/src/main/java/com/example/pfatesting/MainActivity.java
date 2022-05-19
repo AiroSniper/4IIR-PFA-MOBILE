@@ -145,12 +145,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (null != cameraIntent.resolveActivity(getPackageManager())) {
-                   /* try {
-                        //imageFile = getImageFile();
+                if (null != cameraIntent.resolveActivity(getPackageManager())) { try {
+                        imageFile = getImageFile();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }*/
+                    }
                     if (imageFile != null) {
                         imageUri = FileProvider.getUriForFile(MainActivity.this, "com.example.android.fileprovider", imageFile);
                         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
@@ -221,11 +220,59 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //image upload
+    private File getImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageName = "image" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File imageFile = File.createTempFile(imageName, ".jpg", storageDir);
+        currentImagePath = imageFile.getAbsolutePath();
+        return imageFile;
+    }
 
+    private Bitmap getImageOrientation(Bitmap bitmap) {
+        Bitmap rotatedBitmap = null;
+        ExifInterface ei = null;
+        try {
+            ei = new ExifInterface(currentImagePath);
 
+            int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
 
+            switch (orientation) {
 
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    Log.d("ORIENTATION", "90");
+                    rotatedBitmap = rotateImage(bitmap, 90);
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    Log.d("ORIENTATION", "180");
+                    rotatedBitmap = rotateImage(bitmap, 180);
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    Log.d("ORIENTATION", "270");
+                    rotatedBitmap = rotateImage(bitmap, 270);
+                    break;
+
+                case ExifInterface.ORIENTATION_NORMAL:
+                    Log.d("ORIENTATION", "normal");
+                default:
+                    rotatedBitmap = bitmap;
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rotatedBitmap;
+    }
+
+    public static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
+    }
 
 
     public void uploadImage()   {
