@@ -161,11 +161,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (null != cameraIntent.resolveActivity(getPackageManager())) {
-                   /* try {
-                        //imageFile = getImageFile();
+                    try {
+                        imageFile = getImageFile();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }*/
+                    }
                     if (imageFile != null) {
                         imageUri = FileProvider.getUriForFile(MainActivity.this, "com.example.android.fileprovider", imageFile);
                         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
@@ -236,8 +236,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == IMAGE_REQUEST) {
             Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath).copy(Bitmap.Config.ARGB_8888, true);
-           // rotatedBitmap = getImageOrientation(bitmap);
-           // getLocation();
+            rotatedBitmap = getImageOrientation(bitmap);
+            getLocation();
             image.setImageBitmap(rotatedBitmap);
 
             IS_SAVED =false;
